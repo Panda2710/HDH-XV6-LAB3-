@@ -57,3 +57,8 @@
 //   TRAPFRAME (p->trapframe, used by the trampoline)
 //   TRAMPOLINE (the same page as in the kernel)
 #define TRAPFRAME (TRAMPOLINE - PGSIZE)
+
+
+/*********HDH_LAB3-speedupSYSCALL******/
+#define USYSCALL (TRAPFRAME - PGSIZE)
+/*********HDH_LAB3-speedupSYSCALL******/

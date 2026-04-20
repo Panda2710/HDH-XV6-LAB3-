@@ -41,3 +41,11 @@ void *memcpy(void *, const void *, uint);
 // umalloc.c
 void* malloc(uint);
 void free(void*);
+
+/*********HDH_LAB3-speedupSYSCALL***********/
+struct usyscall {
+  int pid;
+};
+/*********HDH_LAB3-speedupSYSCALL***********/
+
+int ugetpid();

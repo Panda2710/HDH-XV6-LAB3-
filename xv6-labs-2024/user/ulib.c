@@ -2,7 +2,10 @@
 #include "kernel/stat.h"
 #include "kernel/fcntl.h"
 #include "user/user.h"
-
+/**HDH_LAB3-speedupSYSCALL*/
+#include "kernel/riscv.h"
+#include "kernel/memlayout.h"
+/**HDH_LAB3-speedupSYSCALL*/
 //
 // wrapper so that it's OK if main() does not call exit().
 //
@@ -145,3 +148,11 @@ memcpy(void *dst, const void *src, uint n)
 {
   return memmove(dst, src, n);
 }
+
+/*********HDH_LAB3-speedupSYSCALL***********/
+// Fast user-space getpid: read directly from shared USYSCALL page
+int ugetpid(void) {
+  struct usyscall *u = (struct usyscall *)USYSCALL;
+  return u->pid;
+}
+/*********HDH_LAB3-speedupSYSCALL***********/
