@@ -91,3 +91,27 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+uint64 sys_pgaccess(void) {
+  uint64 startingAddr;
+  int numberToCheck;
+  uint64 bitMask;
+  argaddr(0, &startingAddr);
+  argint(1, &numberToCheck);
+  argaddr(2, &bitMask);
+
+  unsigned int kBitMask = 0;
+  pte_t *entry;
+  for (int i = 0; i < numberToCheck; i++) {
+    entry = walk(myproc()->pagetable, startingAddr + (PGSIZE * i), 0);
+    if ((*entry & PTE_A) != 0) {
+      kBitMask = kBitMask | (1 << i); // set i bit in bitmask to 1
+      *entry = *entry & ~PTE_A;        // set PTE_A to 0
+    }
+  }
+
+  if (copyout(myproc()->pagetable, bitMask, (char *)&kBitMask, sizeof(kBitMask)) != 0) {
+    return -1;
+  }
+  return 0;
+}
