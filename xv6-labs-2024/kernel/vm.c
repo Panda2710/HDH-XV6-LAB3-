@@ -449,3 +449,41 @@ copyinstr(pagetable_t pagetable, char *dst, uint64 srcva, uint64 max)
     return -1;
   }
 }
+
+// Ham helper function de duyet qua cay
+void 
+vmprint_helper(pagetable_t pagetable, int depth) 
+{
+  // duyet qua 512 PTE trong bang trang hien tai
+  for(int i = 0; i < 512; i++){
+    pte_t pte = pagetable[i];
+    
+    // check PTE co hop le khong
+    if(pte & PTE_V){
+      // In ra cac dau .. dua theo level hien tai
+      for(int j = 0; j < depth; j++){
+        printf(".. ");
+      }
+      
+      // In ra chi so, gia tri PTE va dia chi vat ly
+      printf("..%d: pte %p pa %p\n", i, (void *)pte, (void *)PTE2PA(pte));
+      
+      // Check xem PTE nay co tro toi bang con khong hay la trang la
+      // Neu PTE khong co quyen doc(R), ghi(W), thuc thi(X), thi no tro toi bang con
+      if((pte & (PTE_R | PTE_W | PTE_X)) == 0){
+        // Lay dia chi cua bang con va bat dau goi de quy voi level + 1
+        uint64 child = PTE2PA(pte);
+        vmprint_helper((pagetable_t)child, depth + 1);
+      }
+    }
+  }
+}
+
+void 
+vmprint(pagetable_t pagetable) 
+{
+  // In ra dong dau tien la dia chi cua trang goc
+  printf("page table %p\n", pagetable);
+  // Goi ham in de quy voi do sau level ban dau la 0
+  vmprint_helper(pagetable, 0);
+}
