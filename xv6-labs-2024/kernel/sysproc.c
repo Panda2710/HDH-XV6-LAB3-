@@ -100,6 +100,12 @@ uint64 sys_pgaccess(void) {
   argint(1, &numberToCheck);
   argaddr(2, &bitMask);
 
+  // Limit number of pages to check
+  if (numberToCheck > 32) {
+    printf("Cannot check more than 32 pages.");
+    return -1;
+  }
+
   unsigned int kBitMask = 0;
   pte_t *entry;
 
@@ -114,6 +120,7 @@ uint64 sys_pgaccess(void) {
 
   // Copy bitmask out to user space
   if (copyout(myproc()->pagetable, bitMask, (char *)&kBitMask, sizeof(kBitMask)) != 0) {
+    printf("Bitmask copyout failed.");
     return -1;
   }
   return 0;
