@@ -1,0 +1,26 @@
+Câu trả lời cho bài 4.1:
+
+Câu trả lời cho bài 4.2:
+Kết quả của hàm vmprint() sau khi chạy make qemu:
+page table 0x0000000087f4d000
+..0: pte 0x0000000021fd2401 pa 0x0000000087f49000
+.. ..0: pte 0x0000000021fd2001 pa 0x0000000087f48000
+.. .. ..0: pte 0x0000000021fd281b pa 0x0000000087f4a000
+.. .. ..1: pte 0x0000000021fd1c17 pa 0x0000000087f47000
+.. .. ..2: pte 0x0000000021fd1807 pa 0x0000000087f46000
+.. .. ..3: pte 0x0000000021fd1417 pa 0x0000000087f45000
+..255: pte 0x0000000021fd3001 pa 0x0000000087f4c000
+.. ..511: pte 0x0000000021fd2c01 pa 0x0000000087f4b000
+.. .. ..509: pte 0x0000000021fd5413 pa 0x0000000087f55000
+.. .. ..510: pte 0x0000000021fd5807 pa 0x0000000087f56000
+.. .. ..511: pte 0x000000002000180b pa 0x0000000080006000
+Dựa trên đầu ra thực tế của hàm vmprint() cho tiến trình init, cấu trúc cây bảng trang 3 cấp đã ánh xạ các trang lá (leaf pages - được biểu diễn bằng .. .. ..) với các ý nghĩa logic và bit quyền cụ thể như sau:
+- Vùng nhớ thấp (Code, Data và Stack):
+.. .. ..0: pte ...21fd281b (Code/Text): Chứa mã lệnh của chương trình init. Giá trị bit quyền là 0x1b (0001 1011 trong hệ nhị phân). Các cờ được bật gồm V, R, X, U. Điều này cho phép tiến trình người dùng được phép Đọc (R) và Thực thi (X) mã lệnh, nhưng không được phép Ghi (bảo vệ code).
+.. .. ..1: pte ...21fd1c17 (Data): Chứa dữ liệu của chương trình. Giá trị cờ là 0x17 (0001 0111). Các cờ được bật gồm V, R, W, U. Tiến trình người dùng có quyền Đọc (R) và Ghi (W) vào biến dữ liệu.
+.. .. ..2: pte ...21fd1807 (Guard Page): Đây là trang bảo vệ nằm ngay dưới User Stack để chống tràn stack (stack underflow). Cờ là 0x07 (V, R, W) nhưng đặc biệt không có cờ U (User). Nếu người dùng vô tình truy cập vượt quá stack, phần cứng sẽ báo lỗi page fault do thiếu quyền U, giúp kernel dễ dàng bắt lỗi.
+.. .. ..3: pte ...21fd1417 (User Stack): Ngăn xếp của người dùng. Cờ là 0x17 (V, R, W, U), cho phép người dùng thoải mái đọc và ghi các biến cục bộ.
+- Vùng nhớ cao (Hệ thống và Kernel): Được ánh xạ qua mục 255 ở cấp cao nhất (L2), trỏ xuống các trang lá ở địa chỉ rất cao:
+.. .. ..509: pte ...21fd5413 (USYSCALL): Đây chính là trang chia sẻ được cài đặt trong phần 4.1 để tăng tốc hàm getpid(). Cờ là 0x13 (0001 0011) gồm V, R, U. Không gian User chỉ được cấp quyền Đọc (R) trang này, không được ghi.
+.. .. ..510: pte ...21fd5807 (Trapframe): Trang lưu trữ trạng thái thanh ghi khi chuyển đổi ngữ cảnh (Context switch). Cờ là 0x07 (V, R, W) và không có cờ U. Điều này đảm bảo tính bảo mật tuyệt đối: User không thể đọc/ghi trực tiếp vào Trapframe, chỉ Kernel mới có quyền xử lý nó.
+.. .. ..511: pte ...2000180b (Trampoline): Nằm ở đỉnh của không gian bộ nhớ ảo, chứa mã lệnh chuyển đổi mode User-Kernel. Cờ là 0x0b (0000 1011) gồm V, R, X. Hoàn toàn vắng bóng cờ U, nghĩa là chỉ Kernel mới được phép đọc và thực thi đoạn mã nhạy cảm này.
