@@ -102,14 +102,17 @@ uint64 sys_pgaccess(void) {
 
   unsigned int kBitMask = 0;
   pte_t *entry;
+
   for (int i = 0; i < numberToCheck; i++) {
+    // Retrieve pagetable entry for i-th page
     entry = walk(myproc()->pagetable, startingAddr + (PGSIZE * i), 0);
-    if ((*entry & PTE_A) != 0) {
-      kBitMask = kBitMask | (1 << i); // set i bit in bitmask to 1
-      *entry = *entry & ~PTE_A;        // set PTE_A to 0
+    if ((*entry & PTE_A) != 0) {        // if PTE_A is on
+      kBitMask = kBitMask | (1 << i);   // set i-th bit in bitmask to 1
+      *entry = *entry & ~PTE_A;         // reset PTE_A to 0
     }
   }
 
+  // Copy bitmask out to user space
   if (copyout(myproc()->pagetable, bitMask, (char *)&kBitMask, sizeof(kBitMask)) != 0) {
     return -1;
   }
