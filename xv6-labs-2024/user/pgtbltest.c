@@ -1,4 +1,4 @@
-﻿#include "kernel/param.h"
+#include "kernel/param.h"
 #include "kernel/fcntl.h"
 #include "kernel/types.h"
 #include "kernel/riscv.h"
