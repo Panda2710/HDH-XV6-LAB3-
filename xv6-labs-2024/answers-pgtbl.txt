@@ -1,5 +1,8 @@
-Câu trả lời cho bài 4.1:
-
+Câu trả lời cho câu hỏi thêm ở bài 4.1:
+Phương pháp sử dụng trang chia sẻ (shared page) giữa kernel và user space rất hiệu quả đối với các
+system call dùng để truy xuất các thông tin tĩnh (ít thay đổi) hoặc thông tin chung của
+hệ thống mà không yêu cầu tính bảo mật quá khắt khe. Trong hệ điều hành xv6, các lệnh gọi hệ
+thống sau có thể được tăng tốc theo cách tương tự: uptime() fstat()
 Câu trả lời cho bài 4.2:
 Kết quả của hàm vmprint() sau khi chạy make qemu:
 page table 0x0000000087f4d000
